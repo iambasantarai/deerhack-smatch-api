@@ -49,6 +49,7 @@ export class Company {
 
   @Column()
   employeeNumber: string;
+
   @Column()
   phone: string;
 
