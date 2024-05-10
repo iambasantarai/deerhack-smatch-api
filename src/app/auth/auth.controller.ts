@@ -6,7 +6,11 @@ import {
   UploadedFiles,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LoginAuthDto, createSchema } from './dto/create-auth.dto';
+import {
+  CreateAuthDto,
+  LoginAuthDto,
+  createSchema,
+} from './dto/create-auth.dto';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 
@@ -43,7 +47,7 @@ address
     schema: createSchema,
   })
   registerUser(
-    @Body() registerDetails: any,
+    @Body() registerDetails: CreateAuthDto,
     // @UploadedFile({
     //   name: 'profilePic',
     // })

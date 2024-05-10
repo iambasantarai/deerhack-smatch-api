@@ -9,7 +9,6 @@ export class AuthService {
   @Public()
   login(createAuthDto: LoginAuthDto) {
     console.log({ createAuthDto });
-
     return 'This action adds a new auth';
   }
 
