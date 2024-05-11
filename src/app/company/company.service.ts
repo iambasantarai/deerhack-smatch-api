@@ -8,16 +8,22 @@ import { Repository } from 'typeorm';
 import { faker } from '@faker-js/faker';
 import { generateCompanyData } from 'src/faker/faker-script';
 import * as bcrypt from 'bcrypt';
+import { JobStatus, UserJob } from '../user/entities/userJob.entity';
 @Injectable()
 export class CompanyService {
   constructor(
     @InjectRepository(Company)
     private readonly companyRepository: Repository<Company>,
+    @InjectRepository(UserJob)
+    private readonly userJobRepository: Repository<UserJob>,
     private jwtService: JwtService,
   ) {}
-  create(createCompanyDto: CreateCompanyDto) {
-    const exits = this.companyRepository.findOne({
-      where: { hrEmail: createCompanyDto.hrEmail },
+  async create(createCompanyDto: CreateCompanyDto) {
+    const exits = await this.companyRepository.findOne({
+      where: [
+        { hrEmail: createCompanyDto.hrEmail },
+        { name: createCompanyDto.name },
+      ],
     });
     if (exits) {
       throw new HttpException('Company already exits', HttpStatus.BAD_REQUEST);
@@ -83,5 +89,36 @@ export class CompanyService {
     return this.companyRepository.findOne({
       where: { hrEmail: email },
     });
+  }
+  async companyDashboard(cid: number) {
+    const totalJobs = await this.companyRepository.count({
+      where: {
+        id: cid,
+      },
+    });
+    const totalApplications = await this.userJobRepository.count({
+      where: {
+        job: {
+          company: {
+            id: cid,
+          },
+        },
+      },
+    });
+    const totalActiveEmployees = await this.userJobRepository.count({
+      where: {
+        job: {
+          company: {
+            id: cid,
+          },
+        },
+        status: JobStatus.ACCEPTED,
+      },
+    });
+    return {
+      totalJobs: totalJobs,
+      totalApplications: totalApplications,
+      totalActiveEmployees,
+    };
   }
 }

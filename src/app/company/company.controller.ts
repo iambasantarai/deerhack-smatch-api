@@ -59,6 +59,12 @@ export class CompanyController {
   companyFaker() {
     return this.companyService.companyFaker();
   }
+  @Company()
+  @Get('/dashboard')
+  companyDashboard(@Req() req: any) {
+    const { user } = req;
+    return this.companyService.companyDashboard(user.id);
+  }
 
   @Get(':id')
   findOne(@Param('id') id: string) {

@@ -1,4 +1,11 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  OneToMany,
+  JoinTable,
+} from 'typeorm';
+import { UserJob } from './userJob.entity';
 
 @Entity('user')
 export class User {
@@ -31,4 +38,7 @@ export class User {
 
   @Column({ nullable: true, type: 'simple-array' })
   skills: string[];
+
+  @OneToMany(() => UserJob, (UserJob) => UserJob.user)
+  jobsApplied: UserJob[];
 }

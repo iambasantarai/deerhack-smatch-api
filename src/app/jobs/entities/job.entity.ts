@@ -1,6 +1,14 @@
 import { Company } from 'src/app/company/entities/company.entity';
+import { UserJob } from 'src/app/user/entities/userJob.entity';
+import { Base } from 'src/baseEntity';
 import { Industry } from 'src/utils/enum';
-import { Column, Entity, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import {
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
 export enum jobType {
   FullTime = 'Full Time',
   PartTime = 'Part Time',
@@ -9,7 +17,7 @@ export enum jobType {
   Temporary = 'Temporary',
 }
 @Entity('job')
-export class Job {
+export class Job extends Base {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -39,4 +47,7 @@ export class Job {
 
   @ManyToOne(() => Company, (company) => company.jobs)
   company: Company;
+
+  @OneToMany(() => UserJob, (UserJob) => UserJob.job)
+  users: UserJob[];
 }

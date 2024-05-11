@@ -19,7 +19,10 @@ export class UserService {
   }
   // ! pachi remove return type
   findOneUsersByID(id: number): any {
-    return `This action returns a #${id} user`;
+    return this.userRepository.findOne({
+      where: { id },
+      select: ['id', 'name', 'email', 'phone', 'avatar'],
+    });
   }
 
   findUserByEmail(email: string) {
@@ -34,5 +37,14 @@ export class UserService {
   }
   async sessionUser(user: any) {
     return user;
+  }
+
+  async userDashboard(id: number) {
+    const user = await this.userRepository.findOne({
+      where: { id },
+      relations: ['jobsApplied'],
+    });
+    const jobs = user.jobsApplied.filter((job) => job.status === 'applied');
+    return { user, jobs };
   }
 }
