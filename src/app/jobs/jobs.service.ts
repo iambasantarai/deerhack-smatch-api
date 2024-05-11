@@ -118,6 +118,24 @@ export class JobsService {
 
     return job;
   }
+
+  async updateJob(createJobDto: CreateJobDto, companyId) {
+    const exits = await this.jobRepository.findOne({
+      where: {
+        title: createJobDto.title,
+        company: {
+          id: companyId,
+        },
+      },
+    });
+    if (!exits) {
+      throw new HttpException('Job not found', HttpStatus.NOT_FOUND);
+    }
+    return this.jobRepository.save({
+      ...createJobDto,
+      company: { id: companyId },
+    });
+  }
   async findOne(jid) {
     return this.jobRepository.findOne({
       where: { id: jid },
@@ -213,6 +231,20 @@ export class JobsService {
     return this.jobRepository.findOne({
       where: { company: { id: userId }, id: jobId },
       relations: ['company', 'users'],
+    });
+  }
+
+  async appliedJobs(userId: number, query: jobListQuery) {
+    const { page, take } = query;
+    let skip;
+    if (take) {
+      skip = take * (page - 1);
+    }
+    return this.userJobRepository.findAndCount({
+      where: { user: { id: userId } },
+      skip,
+      take,
+      relations: ['job'],
     });
   }
 }

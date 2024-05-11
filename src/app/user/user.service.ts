@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { JobStatus, UserJob } from './entities/userJob.entity';
+import { CreateAuthDto } from '../auth/dto/create-auth.dto';
 @Injectable()
 export class UserService {
   constructor(
@@ -43,22 +44,28 @@ export class UserService {
   }
 
   async userDashboard(id: number) {
-    const user = await this.userRepository.findOne({
-      where: { id },
-      relations: ['jobsApplied'],
-    });
     // const jobsApplied = await this.userJobRepository.count({
     //   where: { user: { id }, status: JobStatus.APPLIED },
     // });
     // group by status and count using  uery builder
     const jobs = await this.userJobRepository
       .createQueryBuilder('userJob')
-      .select('userJob.status')
+      .select('userJob.status', 'status')
       .addSelect('COUNT(userJob.status)', 'count')
       .where('userJob.user = :id', { id })
+      //   userJob.status equlas to status
       .groupBy('userJob.status')
       .getRawMany();
     console.log({ jobs });
     return { jobs };
+  }
+  async updateUser(user: CreateAuthDto, userId: number) {
+    const existingUser = await this.userRepository.findOne({
+      where: { id: userId },
+    });
+    if (!existingUser) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+    return this.userRepository.update({ id: userId }, user);
   }
 }

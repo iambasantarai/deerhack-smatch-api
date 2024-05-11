@@ -46,6 +46,10 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       if (user.type !== 'company') {
         throw new UnauthorizedException();
       }
+    } else {
+      if (user.type !== 'user') {
+        throw new UnauthorizedException();
+      }
     }
 
     return user;

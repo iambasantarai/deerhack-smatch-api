@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Req, Get, Query } from '@nestjs/common';
+import { Controller, Post, Body, Req, Get, Query, Patch } from '@nestjs/common';
 import { JobsService } from './jobs.service';
 import { CreateJobDto } from './dto/create-job.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
@@ -15,7 +15,11 @@ export class JobsController {
   create(@Body() createJobDto: CreateJobDto, @Req() req: any) {
     return this.jobsService.create(createJobDto, req.user.id);
   }
-
+  @Company()
+  @Patch('/update')
+  update(@Body() createJobDto: CreateJobDto, @Req() req: any) {
+    return this.jobsService.updateJob(createJobDto, req.user.id);
+  }
   @Public()
   @Get()
   findAll(@Query() params: jobListQuery) {
@@ -24,13 +28,22 @@ export class JobsController {
       take: params.take,
     });
   }
+
   @Post('apply-job')
   applyJob(@Body() body: applyJobDto, @Req() req: any) {
     return this.jobsService.applyJob(body, req.user.id);
   }
-  @Get('/analyze/:jid')
-  analyze(@Req() req: any, @Query('jid') jid: string) {
-    return this.jobsService.analyze(req.user.id, jid);
+  //   @Get('/analyze/:jid')
+  //   analyze(@Req() req: any, @Query('jid') jid: string) {
+  //     return this.jobsService.analyze(req.user.id, jid);
+  //   }
+
+  @Get('/applied-jobs')
+  async appliedJobs(@Req() req: any, @Query() params: jobListQuery) {
+    return this.jobsService.appliedJobs(req.user.id, {
+      page: params.page,
+      take: params.take,
+    });
   }
   @Public()
   @Get('seeder')

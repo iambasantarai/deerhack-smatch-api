@@ -1,6 +1,16 @@
-import { Controller, Get, Param, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Req,
+  UseInterceptors,
+} from '@nestjs/common';
 import { UserService } from './user.service';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiTags } from '@nestjs/swagger';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { CreateAuthDto, createSchema } from '../auth/dto/create-auth.dto';
 
 @ApiTags('user')
 @ApiBearerAuth()
@@ -26,5 +36,20 @@ export class UserController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.userService.findOneUsersByID(+id);
+  }
+
+  @Patch('update')
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'profilePic', maxCount: 1 },
+      { name: 'cv', maxCount: 1 },
+    ]),
+  )
+  @ApiBody({
+    schema: createSchema,
+  })
+  update(@Req() req: any, @Body() editUser: CreateAuthDto) {
+    const { user } = req;
+    return this.userService.updateUser(editUser, user.id);
   }
 }
