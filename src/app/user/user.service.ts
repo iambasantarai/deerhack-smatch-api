@@ -68,4 +68,10 @@ export class UserService {
     }
     return this.userRepository.update({ id: userId }, user);
   }
+
+  async ingestAndEvaluateMyResume(id: number) {
+    console.log('::: hi :::');
+    console.log(id);
+    console.log('::: hi :::');
+  }
 }

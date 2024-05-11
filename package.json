@@ -20,6 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@huggingface/inference": "^2.6.7",
     "@langchain/community": "^0.0.55",
     "@langchain/core": "^0.1.62",
     "@langchain/openai": "^0.0.28",
@@ -32,6 +33,7 @@
     "@types/dotenv": "^8.2.0",
     "axios": "^1.6.8",
     "bcrypt": "^5.1.1",
+    "chromadb": "^1.8.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "dotenv": "^16.4.5",
@@ -40,6 +42,7 @@
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
+    "pdf-parse": "^1.1.1",
     "pg": "^8.11.5",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
