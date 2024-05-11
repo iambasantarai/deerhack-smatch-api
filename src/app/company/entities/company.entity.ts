@@ -1,4 +1,5 @@
 import { Job } from 'src/app/jobs/entities/job.entity';
+import { Base } from 'src/baseEntity';
 import { Column, Entity, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 
 export enum Industry {
@@ -20,7 +21,7 @@ export enum Industry {
   LegalServices = 'Legal Services',
 }
 @Entity('company')
-export class Company {
+export class Company extends Base {
   @PrimaryGeneratedColumn()
   id: number;
 

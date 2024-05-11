@@ -8,11 +8,17 @@ import { jobListQuery } from './dto/jobLIst.dto';
 import { generateCompanyData } from 'src/faker/faker-script';
 import { Company, Industry } from '../company/entities/company.entity';
 import { CompanyService } from '../company/company.service';
+import { UserService } from '../user/user.service';
+import axios from 'axios';
+import { createReadStream } from 'fs';
+import { join } from 'path';
+import FormData from 'form-data';
 @Injectable()
 export class JobsService {
   constructor(
     @InjectRepository(Job)
     private readonly jobRepository: Repository<Job>,
+    private readonly userService: UserService,
     private readonly companyService: CompanyService,
   ) {}
   async create(createJobDto: CreateJobDto, companyId) {
@@ -32,17 +38,42 @@ export class JobsService {
       company: { id: companyId },
     });
   }
-  findAllJob(query: jobListQuery) {
+  async findAllJob(query: jobListQuery) {
     const { page, take } = query;
     let skip;
     if (take) {
       skip = take * (page - 1);
     }
-    return this.jobRepository.findAndCount({ skip, take });
+    return this.jobRepository
+      .createQueryBuilder('job')
+      .leftJoinAndSelect('job.company', 'company')
+      .skip(skip)
+      .take(take)
+      .select([
+        'job.id',
+        'job.title',
+        'job.jobDescription',
+        'job.jobType',
+        'job.jobLocation',
+        'job.jobCategory',
+        'job.jobQualification',
+        'job.jobExperience',
+        'job.jobSalary',
+        'company.id',
+        'company.name',
+        'company.logo',
+      ])
+      .getManyAndCount();
+
+    // return this.jobRepository.findAndCount({
+    //   skip,
+    //   take,
+    //   relations: ['company'],
+    // });
   }
 
   async seeder() {
-    const numCompanies = 1; // Change this to the desired number of fake companies
+    const numCompanies = 10; // Change this to the desired number of fake companies
     for (let i = 0; i < numCompanies; i++) {
       const companyData = await this.createJob();
       await this.jobRepository.save(companyData);
@@ -67,6 +98,14 @@ export class JobsService {
       })
       .toString();
     //   select from the company table and assign to the job
+    job.requirements = {
+      experience: `${faker.helpers.rangeToNumber({
+        min: 1,
+        max: 5,
+      })} years`,
+      qualification: faker.name.jobArea(),
+      skills: faker.lorem.words(),
+    };
     job.company = faker.helpers.arrayElement([
       ...(await this.companyService.findAll()),
     ]);
@@ -74,5 +113,63 @@ export class JobsService {
     //   job.company = await generateCompanyData();
 
     return job;
+  }
+  async findOne(jid) {
+    return this.jobRepository.findOne({
+      where: { id: jid },
+      relations: ['company'],
+    });
+  }
+  async applyJob(body, userId) {
+    const job = await this.jobRepository.findOne({
+      where: { id: body.jobId },
+      relations: ['users'],
+    });
+    if (!job) {
+      throw new HttpException('Job not found', HttpStatus.NOT_FOUND);
+    }
+    const user = await this.userService.findOneUsersByID(userId);
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+    job.users.push(user);
+    return this.jobRepository.save(job);
+  }
+  async analyze(userId, jid) {
+    const job = await this.jobRepository.findOne({
+      where: { id: jid },
+      relations: ['users'],
+    });
+    if (!job) {
+      throw new HttpException('Job not found', HttpStatus.NOT_FOUND);
+    }
+    const user = await this.userService.findOneUsersByID(userId);
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+    const formData = new FormData();
+    // const cvFile = createReadStream(join(process.cwd(), `/uploads/${user.cv}`));
+    const cvFilePath = join(process.cwd(), `/uploads/${user.cv}`);
+    formData.append('resume', createReadStream(cvFilePath));
+
+    formData.append('job_description', job.jobDescription);
+
+    try {
+      const response = await axios.post(
+        'http://localhost:8000/analyze',
+        formData,
+        {
+          headers: {
+            ...formData.getHeaders(), // This automatically sets the correct content-type header
+          },
+        },
+      );
+
+      // Handle response
+      console.log(response.data);
+    } catch (error) {
+      // Handle error
+      console.error('Error:', error.message);
+    }
   }
 }

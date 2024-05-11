@@ -1,3 +1,4 @@
+import { IsNotEmpty } from 'class-validator';
 import { Optional } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 export class jobListQuery {
@@ -13,4 +14,9 @@ export class jobListQuery {
   @Optional()
   //   @Min(0, { message: 'Take should be more than 0' })
   take: number;
+}
+export class applyJobDto {
+  @ApiProperty()
+  @IsNotEmpty()
+  jobId: string;
 }
