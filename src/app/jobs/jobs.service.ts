@@ -174,9 +174,16 @@ export class JobsService {
       console.error('Error:', error.message);
     }
   }
-  async companyJobList(userId) {
-    return this.jobRepository.find({
+  async companyJobList(userId, query) {
+    const { page, take } = query;
+    let skip;
+    if (take) {
+      skip = take * (page - 1);
+    }
+    return this.jobRepository.findAndCount({
       where: { company: { id: userId } },
+      skip,
+      take,
     });
   }
 

@@ -39,8 +39,11 @@ export class JobsController {
   }
   @Company()
   @Get('/company-jobs')
-  companyJobs(@Req() req: any) {
-    return this.jobsService.companyJobList(req.user.id);
+  companyJobs(@Req() req: any, @Query() params: jobListQuery) {
+    return this.jobsService.companyJobList(req.user.id, {
+      page: params.page,
+      take: params.take,
+    });
   }
   @Company()
   @Get('/company-job/:id')
