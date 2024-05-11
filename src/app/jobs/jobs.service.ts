@@ -125,6 +125,15 @@ export class JobsService {
     });
   }
   async applyJob(body, userId) {
+    const userJob = await this.userJobRepository.findOne({
+      where: { user: { id: userId }, job: { id: body.jobId } },
+    });
+    if (userJob) {
+      throw new HttpException(
+        'Already applied for this job',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     const job = await this.jobRepository.findOne({
       where: { id: body.jobId },
       relations: ['users'],
@@ -144,8 +153,7 @@ export class JobsService {
       status: JobStatus.APPLIED,
       matchingPercentage: +matchPercent.MatchPercentage,
     });
-
-    return this.jobRepository.save(job);
+    return { matchPercentage: matchPercent.MatchPercentage };
   }
   async analyze(userId, jid) {
     const job = await this.jobRepository.findOne({
@@ -181,7 +189,7 @@ export class JobsService {
       );
 
       return {
-        MatchPercentage: `${Math.round(response.data.similarity_score * 100)}%`,
+        MatchPercentage: `${Math.round(response.data.similarity_score * 100)}`,
       };
     } catch (error) {
       // Handle error
