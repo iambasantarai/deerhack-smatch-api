@@ -42,7 +42,7 @@ export class JobsService {
   }
 
   async seeder() {
-    const numCompanies = 10; // Change this to the desired number of fake companies
+    const numCompanies = 1; // Change this to the desired number of fake companies
     for (let i = 0; i < numCompanies; i++) {
       const companyData = await this.createJob();
       await this.jobRepository.save(companyData);
@@ -56,8 +56,16 @@ export class JobsService {
     job.jobLocation = faker.address.city();
     job.jobCategory = faker.helpers.enumValue(Industry);
     job.jobQualification = faker.name.jobArea();
-    job.jobExperience = faker.name.jobArea();
-    job.jobSalary = faker.name.jobArea();
+    job.jobExperience = `${faker.helpers.rangeToNumber({
+      min: 1,
+      max: 5,
+    })} years`;
+    job.jobSalary = faker.number
+      .int({
+        min: 10000,
+        max: 200000,
+      })
+      .toString();
     //   select from the company table and assign to the job
     job.company = faker.helpers.arrayElement([
       ...(await this.companyService.findAll()),
