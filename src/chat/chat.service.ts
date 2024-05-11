@@ -45,6 +45,10 @@ export class ChatService {
     const answerPrompt =
       PromptTemplate.fromTemplate(`Given the following user question, corresponding SQL query, and SQL result, answer the user question.
     If the question does not seem related to the database, just return "Sorry. I don't have enough knowledge to help you on this." as the answer.
+    Never query for all the columns from a specific table, only ask for the relevant columns given the question.
+    Answer should be as user friendly as possible.
+
+    DO NOT make any DML statements (INSERT, UPDATE, DELETE, DROP etc.) to the database.
 
     Question: {question}
     SQL Query: {query}
