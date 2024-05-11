@@ -34,6 +34,7 @@ export class UserController {
     const { user } = req;
     return this.userService.userDashboard(user.id);
   }
+
   @Get('evaluate-my-resume')
   evaluateMyrResume(@Req() req: any) {
     const { user } = req;
