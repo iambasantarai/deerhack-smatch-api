@@ -3,9 +3,6 @@ import {
   Get,
   Post,
   Body,
-  Patch,
-  Param,
-  Delete,
   UseInterceptors,
   Req,
 } from '@nestjs/common';
@@ -15,7 +12,6 @@ import {
   LoginCompanyDto,
   createCompanySchema,
 } from './dto/create-company.dto';
-import { UpdateCompanyDto } from './dto/update-company.dto';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { Company, Public } from '../auth/decorator';
@@ -64,20 +60,5 @@ export class CompanyController {
   companyDashboard(@Req() req: any) {
     const { user } = req;
     return this.companyService.companyDashboard(user.id);
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.companyService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCompanyDto: UpdateCompanyDto) {
-    return this.companyService.update(+id, updateCompanyDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.companyService.remove(+id);
   }
 }

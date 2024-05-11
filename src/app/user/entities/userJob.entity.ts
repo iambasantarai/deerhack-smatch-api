@@ -29,4 +29,7 @@ export class UserJob extends Base {
 
   @Column({ type: 'enum', enum: JobStatus, default: JobStatus.APPLIED })
   status: JobStatus;
+
+  @Column({ type: 'float', nullable: true })
+  matchingPercentage: number;
 }

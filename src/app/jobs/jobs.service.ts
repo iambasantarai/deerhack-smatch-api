@@ -12,7 +12,8 @@ import { UserService } from '../user/user.service';
 import axios from 'axios';
 import { createReadStream } from 'fs';
 import { join } from 'path';
-import FormData from 'form-data';
+import * as FormData from 'form-data';
+import { env } from 'src/utils/env.util';
 @Injectable()
 export class JobsService {
   constructor(
@@ -147,16 +148,16 @@ export class JobsService {
     if (!user) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
-    const formData = new FormData();
     // const cvFile = createReadStream(join(process.cwd(), `/uploads/${user.cv}`));
     const cvFilePath = join(process.cwd(), `/uploads/${user.cv}`);
+    const formData = new FormData();
     formData.append('resume', createReadStream(cvFilePath));
 
     formData.append('job_description', job.jobDescription);
 
     try {
       const response = await axios.post(
-        'http://localhost:8000/analyze',
+        `${env.AI_URL}calculate_similarity`,
         formData,
         {
           headers: {
@@ -165,11 +166,24 @@ export class JobsService {
         },
       );
 
-      // Handle response
-      console.log(response.data);
+      return {
+        MatchPercentage: `${Math.round(response.data.similarity_score * 100)}%`,
+      };
     } catch (error) {
       // Handle error
       console.error('Error:', error.message);
     }
+  }
+  async companyJobList(userId) {
+    return this.jobRepository.find({
+      where: { company: { id: userId } },
+    });
+  }
+
+  async companyJob(userId, jobId) {
+    return this.jobRepository.findOne({
+      where: { company: { id: userId }, id: jobId },
+      relations: ['company', 'users'],
+    });
   }
 }

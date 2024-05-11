@@ -2,7 +2,7 @@ import { Controller, Post, Body, Req, Get, Query } from '@nestjs/common';
 import { JobsService } from './jobs.service';
 import { CreateJobDto } from './dto/create-job.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { Public } from '../auth/decorator';
+import { Company, Public } from '../auth/decorator';
 import { applyJobDto, jobListQuery } from './dto/jobLIst.dto';
 
 @ApiTags('Jobs')
@@ -36,6 +36,16 @@ export class JobsController {
   @Get('seeder')
   seeder() {
     return this.jobsService.seeder();
+  }
+  @Company()
+  @Get('/company-jobs')
+  companyJobs(@Req() req: any) {
+    return this.jobsService.companyJobList(req.user.id);
+  }
+  @Company()
+  @Get('/company-job/:id')
+  companyJob(@Req() req: any, @Query('id') id: string) {
+    return this.jobsService.companyJob(req.user.id, id);
   }
   @Public()
   @Get('/:id')

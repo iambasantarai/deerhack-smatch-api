@@ -15,4 +15,5 @@ export enum Industry {
   Nonprofit = 'Nonprofit',
   Government = 'Government',
   LegalServices = 'Legal Services',
+  Sales = 'Sales',
 }
