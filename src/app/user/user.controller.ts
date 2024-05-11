@@ -1,8 +1,9 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Req } from '@nestjs/common';
 import { UserService } from './user.service';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('user')
+@ApiBearerAuth()
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -12,6 +13,11 @@ export class UserController {
     return this.userService.findAll();
   }
 
+  @Get('me')
+  findMe(@Req() req: any) {
+    const { user } = req;
+    return this.userService.sessionUser(user);
+  }
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.userService.findOneUsersByID(+id);

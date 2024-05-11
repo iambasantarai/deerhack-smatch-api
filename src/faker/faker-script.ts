@@ -1,5 +1,7 @@
 import { faker } from '@faker-js/faker';
 import { Company, Industry } from 'src/app/company/entities/company.entity';
+import { Job, jobType } from 'src/app/jobs/entities/job.entity';
+import { typeOrmConfigs } from 'src/config/db-config';
 
 export async function generateCompanyData(): Promise<Company> {
   const company = new Company();

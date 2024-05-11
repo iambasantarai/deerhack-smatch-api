@@ -1,12 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { env } from 'src/config/env';
 import { UserService } from '../user/user.service';
+import { env } from 'src/utils/env.util';
+import { CompanyService } from '../company/company.service';
 
 @Injectable()
 export class JwtStartegy extends PassportStrategy(Strategy) {
-  constructor(private readonly userService: UserService) {
+  constructor(
+    private readonly userService: UserService,
+    private readonly companyService: CompanyService,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -14,16 +18,28 @@ export class JwtStartegy extends PassportStrategy(Strategy) {
     });
   }
   async validate(payload: any) {
-    const user = await this.userService.findOneUsersByID(payload.id);
-    // ! pachi
-    return {
-      userId: user.id,
-      email: user.email,
-      phone: user.phone,
-      irisUserId: user.irisUserId,
-      UserTierId: user.UserTierId,
-      corporateId: user.corporateId,
-      authtoken: payload.authToken,
-    };
+    if (payload.type === 'user') {
+      const user = await this.userService.findUserByEmail(payload.email);
+      // ! pachi
+      return {
+        id: user.id,
+        email: user.email,
+        phone: user.phone,
+        name: user.name,
+        type: 'user',
+        avatar: user.avatar,
+      };
+    } else if (payload.type === 'company') {
+      const company = await this.companyService.findfromEmail(payload.email);
+      // ! pachi
+      return {
+        id: company.CompanyId,
+        email: company.hrEmail,
+        phone: company.phone,
+        name: company.name,
+        type: 'company',
+        avatar: company.logo,
+      };
+    }
   }
 }

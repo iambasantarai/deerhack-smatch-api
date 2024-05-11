@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Job } from 'src/app/jobs/entities/job.entity';
+import { Column, Entity, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 
 export enum Industry {
   IT = 'IT',
@@ -61,4 +62,7 @@ export class Company {
 
   @Column()
   industry: string;
+
+  @OneToMany(() => Job, (job) => job.company)
+  jobs: Job[];
 }

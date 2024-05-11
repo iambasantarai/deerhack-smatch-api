@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsNotEmpty } from 'class-validator';
+import { IsString, IsOptional, IsNotEmpty, IsEmail } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 export class CreateCompanyDto {
   @IsNotEmpty()
@@ -87,3 +87,14 @@ export const createCompanySchema = {
     'industry',
   ],
 };
+
+export class LoginCompanyDto {
+  @ApiProperty()
+  @IsString()
+  @IsEmail()
+  email: string;
+
+  @ApiProperty()
+  @IsString()
+  password: string;
+}
