@@ -9,6 +9,10 @@ import { generateCompanyData } from 'src/faker/faker-script';
 import { Company, Industry } from '../company/entities/company.entity';
 import { CompanyService } from '../company/company.service';
 import { UserService } from '../user/user.service';
+import axios from 'axios';
+import { createReadStream } from 'fs';
+import { join } from 'path';
+import FormData from 'form-data';
 @Injectable()
 export class JobsService {
   constructor(
@@ -94,6 +98,14 @@ export class JobsService {
       })
       .toString();
     //   select from the company table and assign to the job
+    job.requirements = {
+      experience: `${faker.helpers.rangeToNumber({
+        min: 1,
+        max: 5,
+      })} years`,
+      qualification: faker.name.jobArea(),
+      skills: faker.lorem.words(),
+    };
     job.company = faker.helpers.arrayElement([
       ...(await this.companyService.findAll()),
     ]);
@@ -122,5 +134,42 @@ export class JobsService {
     }
     job.users.push(user);
     return this.jobRepository.save(job);
+  }
+  async analyze(userId, jid) {
+    const job = await this.jobRepository.findOne({
+      where: { id: jid },
+      relations: ['users'],
+    });
+    if (!job) {
+      throw new HttpException('Job not found', HttpStatus.NOT_FOUND);
+    }
+    const user = await this.userService.findOneUsersByID(userId);
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+    const formData = new FormData();
+    // const cvFile = createReadStream(join(process.cwd(), `/uploads/${user.cv}`));
+    const cvFilePath = join(process.cwd(), `/uploads/${user.cv}`);
+    formData.append('resume', createReadStream(cvFilePath));
+
+    formData.append('job_description', job.jobDescription);
+
+    try {
+      const response = await axios.post(
+        'http://localhost:8000/analyze',
+        formData,
+        {
+          headers: {
+            ...formData.getHeaders(), // This automatically sets the correct content-type header
+          },
+        },
+      );
+
+      // Handle response
+      console.log(response.data);
+    } catch (error) {
+      // Handle error
+      console.error('Error:', error.message);
+    }
   }
 }

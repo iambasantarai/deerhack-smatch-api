@@ -48,6 +48,12 @@ export class Job extends Base {
   @ManyToOne(() => Company, (company) => company.jobs)
   company: Company;
 
+  @Column({ type: 'jsonb', nullable: true })
+  requirements: any;
+
+  @Column({ type: 'jsonb', nullable: true })
+  benefits: any;
+
   @OneToMany(() => UserJob, (UserJob) => UserJob.job)
   users: UserJob[];
 }

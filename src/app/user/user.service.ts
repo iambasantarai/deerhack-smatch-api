@@ -21,7 +21,7 @@ export class UserService {
   findOneUsersByID(id: number): any {
     return this.userRepository.findOne({
       where: { id },
-      select: ['id', 'name', 'email', 'phone', 'avatar'],
+      select: ['id', 'name', 'email', 'phone', 'avatar', 'cv'],
     });
   }
 

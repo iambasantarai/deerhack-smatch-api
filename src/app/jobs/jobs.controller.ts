@@ -28,6 +28,10 @@ export class JobsController {
   applyJob(@Body() body: applyJobDto, @Req() req: any) {
     return this.jobsService.applyJob(body, req.user.id);
   }
+  @Get('/analyze/:jid')
+  analyze(@Req() req: any, @Query('jid') jid: string) {
+    return this.jobsService.analyze(req.user.id, jid);
+  }
   @Public()
   @Get('seeder')
   seeder() {
