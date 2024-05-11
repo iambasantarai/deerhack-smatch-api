@@ -3,7 +3,10 @@ import { config } from 'dotenv';
 config();
 
 export const port = process.env.PORT;
-
+export const env = {
+  PORT: process.env.PORT || 3000,
+  JWT_SECRET: process.env.JWT_SECRET,
+};
 export const dbCredentials = {
   host: process.env.POSTGRES_HOST || '127.0.0.1',
   port: parseInt(process.env.POSTGRES_PORT, 10) || 5432,

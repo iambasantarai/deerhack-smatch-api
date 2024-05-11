@@ -13,7 +13,9 @@ import {
 } from './dto/create-auth.dto';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { Public } from './decorator';
 
+@Public()
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {

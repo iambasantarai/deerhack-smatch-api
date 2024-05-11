@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsEmail, Matches, IsPhoneNumber } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsEmail,
+  Matches,
+  IsPhoneNumber,
+  IsOptional,
+} from 'class-validator';
 export class LoginAuthDto {
   @ApiProperty()
   @IsNotEmpty()
@@ -62,10 +68,12 @@ export class CreateAuthDto {
   phone: string;
 
   @IsNotEmpty()
-  @Matches(/^(?=.*[A-Za-z])(?=.*d)[A-Za-zd]{8,}$/, {
-    message: `Password must be Minimum eight characters,
-       at least one letter and one number`,
-  })
+  @Matches(
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+    {
+      message: `Password must be Minimum eight characters,at least one letter and one number`,
+    },
+  )
   password: string;
 
   @IsNotEmpty()
@@ -74,9 +82,9 @@ export class CreateAuthDto {
   @IsNotEmpty()
   address: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   profilePic: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   cv: string;
 }
