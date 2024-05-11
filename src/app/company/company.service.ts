@@ -9,6 +9,7 @@ import { faker } from '@faker-js/faker';
 import { generateCompanyData } from 'src/faker/faker-script';
 import * as bcrypt from 'bcrypt';
 import { JobStatus, UserJob } from '../user/entities/userJob.entity';
+import { Job } from '../jobs/entities/job.entity';
 @Injectable()
 export class CompanyService {
   constructor(
@@ -16,6 +17,8 @@ export class CompanyService {
     private readonly companyRepository: Repository<Company>,
     @InjectRepository(UserJob)
     private readonly userJobRepository: Repository<UserJob>,
+    @InjectRepository(Job)
+    private readonly jobRepository: Repository<Job>,
     private jwtService: JwtService,
   ) {}
   async create(createCompanyDto: CreateCompanyDto) {
@@ -91,9 +94,9 @@ export class CompanyService {
     });
   }
   async companyDashboard(cid: number) {
-    const totalJobs = await this.companyRepository.count({
+    const totalJobs = await this.jobRepository.count({
       where: {
-        id: cid,
+        company: { id: cid },
       },
     });
     const totalApplications = await this.userJobRepository.count({

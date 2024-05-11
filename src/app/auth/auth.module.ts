@@ -12,11 +12,12 @@ import { JwtStartegy } from './jwt.strategy';
 import { CompanyService } from '../company/company.service';
 import { Company } from '../company/entities/company.entity';
 import { UserJob } from '../user/entities/userJob.entity';
+import { Job } from '../jobs/entities/job.entity';
 
 @Module({
   imports: [
     MulterModule.register(multerConfig),
-    TypeOrmModule.forFeature([User, Company, UserJob]),
+    TypeOrmModule.forFeature([User, Company, UserJob, Job]),
     JwtModule.register({
       secret: env.JWT_SECRET,
       signOptions: { expiresIn: '1d' },

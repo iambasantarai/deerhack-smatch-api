@@ -14,11 +14,14 @@ import { createReadStream } from 'fs';
 import { join } from 'path';
 import * as FormData from 'form-data';
 import { env } from 'src/utils/env.util';
+import { JobStatus, UserJob } from '../user/entities/userJob.entity';
 @Injectable()
 export class JobsService {
   constructor(
     @InjectRepository(Job)
     private readonly jobRepository: Repository<Job>,
+    @InjectRepository(UserJob)
+    private readonly userJobRepository: Repository<UserJob>,
     private readonly userService: UserService,
     private readonly companyService: CompanyService,
   ) {}
@@ -134,6 +137,14 @@ export class JobsService {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
     job.users.push(user);
+    const matchPercent = await this.callMatchingEngine(job, user);
+    await this.userJobRepository.save({
+      job: { id: job.id },
+      user: { id: user.id },
+      status: JobStatus.APPLIED,
+      matchingPercentage: +matchPercent.MatchPercentage,
+    });
+
     return this.jobRepository.save(job);
   }
   async analyze(userId, jid) {
@@ -148,6 +159,9 @@ export class JobsService {
     if (!user) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
+    return this.callMatchingEngine(job, user);
+  }
+  async callMatchingEngine(job, user) {
     // const cvFile = createReadStream(join(process.cwd(), `/uploads/${user.cv}`));
     const cvFilePath = join(process.cwd(), `/uploads/${user.cv}`);
     const formData = new FormData();

@@ -11,6 +11,7 @@ import { Base } from 'src/baseEntity';
 
 export enum JobStatus {
   APPLIED = 'applied',
+  INREVIEW = 'inreview',
   REJECTED = 'rejected',
   ACCEPTED = 'accepted',
 }
