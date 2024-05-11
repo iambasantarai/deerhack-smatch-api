@@ -3,11 +3,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import { JobStatus, UserJob } from './entities/userJob.entity';
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @InjectRepository(UserJob)
+    private userJobRepository: Repository<UserJob>,
   ) {}
   async createUser(userDetails: any) {
     const user = await this.userRepository.save(userDetails);
@@ -44,7 +47,18 @@ export class UserService {
       where: { id },
       relations: ['jobsApplied'],
     });
-    const jobs = user.jobsApplied.filter((job) => job.status === 'applied');
-    return { user, jobs };
+    // const jobsApplied = await this.userJobRepository.count({
+    //   where: { user: { id }, status: JobStatus.APPLIED },
+    // });
+    // group by status and count using  uery builder
+    const jobs = await this.userJobRepository
+      .createQueryBuilder('userJob')
+      .select('userJob.status')
+      .addSelect('COUNT(userJob.status)', 'count')
+      .where('userJob.user = :id', { id })
+      .groupBy('userJob.status')
+      .getRawMany();
+    console.log({ jobs });
+    return { jobs };
   }
 }
