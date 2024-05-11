@@ -37,4 +37,12 @@ export class CreateJobDto {
   @ApiProperty()
   @IsNotEmpty()
   jobSalary: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  requirements: any;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  benefits: any;
 }
