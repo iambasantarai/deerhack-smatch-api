@@ -33,7 +33,7 @@ export class JwtStartegy extends PassportStrategy(Strategy) {
       const company = await this.companyService.findfromEmail(payload.email);
       // ! pachi
       return {
-        id: company.CompanyId,
+        id: company.id,
         email: company.hrEmail,
         phone: company.phone,
         name: company.name,

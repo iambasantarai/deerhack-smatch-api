@@ -8,7 +8,7 @@ export enum jobType {
   Internship = 'Internship',
   Temporary = 'Temporary',
 }
-@Entity('Job')
+@Entity('job')
 export class Job {
   @PrimaryGeneratedColumn()
   id: number;

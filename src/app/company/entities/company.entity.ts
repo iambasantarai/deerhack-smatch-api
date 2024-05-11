@@ -19,10 +19,10 @@ export enum Industry {
   Government = 'Government',
   LegalServices = 'Legal Services',
 }
-@Entity('Company')
+@Entity('company')
 export class Company {
   @PrimaryGeneratedColumn()
-  CompanyId: number;
+  id: number;
 
   @Column({ length: 50 })
   name: string;
