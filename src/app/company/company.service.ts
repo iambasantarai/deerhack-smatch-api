@@ -44,8 +44,8 @@ export class CompanyService {
       throw new HttpException('Invalid credentials', 401);
     }
     // creating jwt
-    const { CompanyId, name, hrEmail } = company;
-    const payload = { id: CompanyId, name, email: hrEmail, type: 'company' };
+    const { id, name, hrEmail } = company;
+    const payload = { id, name, email: hrEmail, type: 'company' };
     return {
       accessToken: this.jwtService.sign(payload),
       refreshToken: this.jwtService.sign(payload, {

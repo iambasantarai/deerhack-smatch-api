@@ -54,6 +54,7 @@ export class CompanyController {
     return this.companyService.findAll();
   }
 
+  @Public()
   @Get('/company-faker')
   companyFaker() {
     return this.companyService.companyFaker();

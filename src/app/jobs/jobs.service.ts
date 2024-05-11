@@ -20,7 +20,7 @@ export class JobsService {
       where: {
         title: createJobDto.title,
         company: {
-          CompanyId: companyId,
+          id: companyId,
         },
       },
     });
@@ -29,7 +29,7 @@ export class JobsService {
     }
     return this.jobRepository.save({
       ...createJobDto,
-      company: { CompanyId: companyId },
+      company: { id: companyId },
     });
   }
   findAllJob(query: jobListQuery) {
