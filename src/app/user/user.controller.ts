@@ -28,11 +28,13 @@ export class UserController {
     const { user } = req;
     return this.userService.sessionUser(user);
   }
+
   @Get('/dashboard')
   userDashboard(@Req() req: any) {
     const { user } = req;
     return this.userService.userDashboard(user.id);
   }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.userService.findOneUsersByID(+id);
@@ -51,5 +53,11 @@ export class UserController {
   update(@Req() req: any, @Body() editUser: CreateAuthDto) {
     const { user } = req;
     return this.userService.updateUser(editUser, user.id);
+  }
+
+  @Get('evaluate-my-resume')
+  evaluateMyrResume(@Req() req: any) {
+    const { user } = req;
+    return this.userService.ingestAndEvaluateMyResume(user.id);
   }
 }
