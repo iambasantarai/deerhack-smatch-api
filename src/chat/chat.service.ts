@@ -1,108 +1,83 @@
 import { Injectable } from '@nestjs/common';
 import { CreateChatDto } from './dto/create-chat.dto';
 import { ChatOpenAI } from '@langchain/openai';
-import { createOpenAIToolsAgent } from 'langchain/agents';
-import {
-  ChatPromptTemplate,
-  HumanMessagePromptTemplate,
-  MessagesPlaceholder,
-} from '@langchain/core/prompts';
-import { AgentExecutor } from 'langchain/agents';
-import { HumanMessage, AIMessage } from '@langchain/core/messages';
+import { createSqlQueryChain } from 'langchain/chains/sql_db';
+import { PromptTemplate } from '@langchain/core/prompts';
 import { DataSource } from 'typeorm';
 import { SqlDatabase } from 'langchain/sql_db';
 import { dbCredentials } from 'src/utils/env.util';
-import { SqlToolkit } from 'langchain/agents/toolkits/sql';
+import { StringOutputParser } from '@langchain/core/output_parsers';
+import { QuerySqlTool } from 'langchain/tools/sql';
+import {
+  RunnablePassthrough,
+  RunnableSequence,
+} from '@langchain/core/runnables';
 
 @Injectable()
 export class ChatService {
-  async create(companyId: string, createChatDto: CreateChatDto) {
-    const { query } = createChatDto;
+  datasource = new DataSource({
+    type: 'postgres',
+    host: dbCredentials.host,
+    port: dbCredentials.port,
+    username: dbCredentials.username,
+    password: dbCredentials.password,
+    database: dbCredentials.database,
+  });
 
-    const datasource = new DataSource({
-      type: 'postgres',
-      host: dbCredentials.host,
-      port: dbCredentials.port,
-      username: dbCredentials.username,
-      password: dbCredentials.password,
-      database: dbCredentials.database,
-    });
+  model = new ChatOpenAI({
+    model: 'gpt-3.5-turbo-0125',
+    temperature: 0,
+  });
 
+  async getQueryResponse(query: string) {
     const db = await SqlDatabase.fromDataSourceParams({
-      appDataSource: datasource,
-      includesTables: ['Company'],
+      appDataSource: this.datasource,
+      includesTables: ['company', 'job'],
     });
 
-    const model = new ChatOpenAI({
-      model: 'gpt-3.5-turbo-0125',
-      temperature: 0,
+    const executeQuery = new QuerySqlTool(db);
+    const writeQuery = await createSqlQueryChain({
+      llm: this.model,
+      db,
+      dialect: 'postgres',
     });
 
-    const sqlToolKit = new SqlToolkit(db, model);
+    const answerPrompt =
+      PromptTemplate.fromTemplate(`Given the following user question, corresponding SQL query, and SQL result, answer the user question.
+    If the question does not seem related to the database, just return "Sorry. I don't have enough knowledge to help you on this." as the answer.
+    Never query for all the columns from a specific table, only ask for the relevant columns given the question.
+    Answer should be as user friendly as possible.
 
-    const tools = sqlToolKit.getTools();
+    DO NOT make any DML statements (INSERT, UPDATE, DELETE, DROP etc.) to the database.
 
-    const conversationHistory = [];
+    Question: {question}
+    SQL Query: {query}
+    SQL Result: {result}
+    Answer: `);
 
-    const SQL_PREFIX = `You are an agent designed to interact with a SQL database.
-Given an input question, create a syntactically correct {dialect} query to run, then look at the results of the query and return the answer.
-You can order the results by a relevant column to return the most interesting examples in the database.
-Query for all the columns from a specific table for most relevant answers.
-You have access to tools for interacting with the database.
-Only use the given tools. Only use the information returned by the tools to construct your final answer.
-You MUST double check your query before executing it. If you get an error while executing a query, rewrite the query and try again.
+    const answerChain = answerPrompt
+      .pipe(this.model)
+      .pipe(new StringOutputParser());
 
-DO NOT make any DML statements (INSERT, UPDATE, DELETE, DROP etc.) to the database.
-
-If the question does not seem related to the database table, just return "Sorry. I don't have enough knowledge to help you." as the answer.`;
-
-    const SQL_SUFFIX = `Begin!
-
-Question: {input}
-Thought: I should look for {companyId} at the table in the database to answer the question.
-{agent_scratchpad}`;
-
-    const prompt = ChatPromptTemplate.fromMessages([
-      ['system', SQL_PREFIX],
-      HumanMessagePromptTemplate.fromTemplate('{input}, {companyId}'),
-      new AIMessage(SQL_SUFFIX.replace('{agent_scratchpad}', '')),
-      new MessagesPlaceholder('agent_scratchpad'),
+    const chain = RunnableSequence.from([
+      RunnablePassthrough.assign({ query: writeQuery }).assign({
+        result: (i: { query: string }) => executeQuery.invoke(i.query),
+      }),
+      answerChain,
     ]);
 
-    const newPrompt = await prompt.partial({
-      dialect: sqlToolKit.dialect,
-    });
+    const answer = await chain.invoke({ question: query });
 
-    const runnableAgent = await createOpenAIToolsAgent({
-      llm: model,
-      tools,
-      prompt: newPrompt,
-    });
+    return answer;
+  }
 
-    const agentExecutor = new AgentExecutor({
-      agent: runnableAgent,
-      tools,
-    });
+  async create(createChatDto: CreateChatDto) {
+    const { query } = createChatDto;
 
-    const result = await agentExecutor.invoke({
-      input: query,
-      companyId,
-      chat_history: conversationHistory,
-    });
-
-    console.log('::: RESULT :::');
-    console.log(result);
-    console.log('::: RESULT :::');
-
-    conversationHistory.push(new HumanMessage(query));
-    conversationHistory.push(new AIMessage(result.output));
-
-    console.log('::: HISTORY :::');
-    console.log(conversationHistory);
-    console.log('::: HISTORY :::');
+    const response = await this.getQueryResponse(query);
 
     return {
-      response: result.output,
+      response,
     };
   }
 }
