@@ -34,10 +34,10 @@ export class UserController {
     const { user } = req;
     return this.userService.userDashboard(user.id);
   }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOneUsersByID(+id);
+  @Get('evaluate-my-resume')
+  evaluateMyrResume(@Req() req: any) {
+    const { user } = req;
+    return this.userService.ingestAndEvaluateMyResume(user.id);
   }
 
   @Patch('update')
@@ -55,9 +55,8 @@ export class UserController {
     return this.userService.updateUser(editUser, user.id);
   }
 
-  @Get('evaluate-my-resume')
-  evaluateMyrResume(@Req() req: any) {
-    const { user } = req;
-    return this.userService.ingestAndEvaluateMyResume(user.id);
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.userService.findOneUsersByID(+id);
   }
 }
