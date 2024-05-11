@@ -39,11 +39,12 @@ export class ChatService {
     const writeQuery = await createSqlQueryChain({
       llm: this.model,
       db,
-      dialect: 'sqlite',
+      dialect: 'postgres',
     });
 
     const answerPrompt =
       PromptTemplate.fromTemplate(`Given the following user question, corresponding SQL query, and SQL result, answer the user question.
+    If the question does not seem related to the database, just return "Sorry. I don't have enough knowledge to help you on this." as the answer.
 
     Question: {question}
     SQL Query: {query}
