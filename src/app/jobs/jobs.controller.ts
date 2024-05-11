@@ -1,4 +1,13 @@
-import { Controller, Post, Body, Req, Get, Query, Patch } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Req,
+  Get,
+  Query,
+  Patch,
+  Param,
+} from '@nestjs/common';
 import { JobsService } from './jobs.service';
 import { CreateJobDto } from './dto/create-job.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
@@ -45,6 +54,11 @@ export class JobsController {
       take: params.take,
     });
   }
+
+  @Get('/job-status/:jid')
+  async jobStatus(@Req() req: any, @Query('jid') jid: string) {
+    return this.jobsService.jobStatus(req.user.id, jid);
+  }
   @Public()
   @Get('seeder')
   seeder() {
@@ -60,7 +74,7 @@ export class JobsController {
   }
   @Company()
   @Get('/company-job/:id')
-  companyJob(@Req() req: any, @Query('id') id: string) {
+  companyJob(@Req() req: any, @Param('id') id: string) {
     return this.jobsService.companyJob(req.user.id, id);
   }
   @Public()

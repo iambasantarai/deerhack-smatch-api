@@ -42,6 +42,27 @@ export class JobsService {
       company: { id: companyId },
     });
   }
+  async jobStatus(userId: number, jid: string) {
+    const job = await this.jobRepository.findOne({
+      where: { id: +jid },
+      relations: ['users'],
+    });
+    if (!job) {
+      throw new HttpException('Job not found', HttpStatus.NOT_FOUND);
+    }
+
+    const userJob = await this.userJobRepository.findOne({
+      where: { user: { id: userId }, job: { id: +jid } },
+      relations: ['job'],
+    });
+    if (!userJob) {
+      throw new HttpException(
+        'User not applied for this job',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    return userJob;
+  }
   async findAllJob(query: jobListQuery) {
     const { page, take } = query;
     let skip;
@@ -228,10 +249,19 @@ export class JobsService {
   }
 
   async companyJob(userId, jobId) {
-    return this.jobRepository.findOne({
-      where: { company: { id: userId }, id: jobId },
-      relations: ['company', 'users'],
-    });
+    // return this.jobRepository.findOne({
+    //   where: { company: { id: userId }, id: jobId },
+    //   relations: ['company', 'users'],
+    // });
+    // query builder'
+    return this.jobRepository
+      .createQueryBuilder('job')
+      .leftJoinAndSelect('job.company', 'company')
+      .leftJoinAndSelect('job.users', 'users')
+      .leftJoinAndSelect('users.user', 'user')
+      .where('job.company = :userId', { userId })
+      .andWhere('job.id = :jobId', { jobId })
+      .getOne();
   }
 
   async appliedJobs(userId: number, query: jobListQuery) {
