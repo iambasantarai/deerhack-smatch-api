@@ -48,7 +48,7 @@ address
   @ApiBody({
     schema: createSchema,
   })
-  registerUser(
+  async registerUser(
     @Body() registerDetails: CreateAuthDto,
     // @UploadedFile({
     //   name: 'profilePic',

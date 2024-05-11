@@ -277,4 +277,23 @@ export class JobsService {
       relations: ['job'],
     });
   }
+  async jobDetails(userId, jid) {
+    return this.jobRepository.find({
+      where: { company: { id: userId }, id: jid },
+      relations: ['company', 'users'],
+    });
+  }
+  async jobStatusChange(jid, body, status) {
+    const userJob = await this.userJobRepository.findOne({
+      where: { user: { id: +body.userid }, job: { id: +jid } },
+    });
+    if (!userJob) {
+      throw new HttpException(
+        'User not applied for this job',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    userJob.status = status;
+    return this.userJobRepository.save(userJob);
+  }
 }

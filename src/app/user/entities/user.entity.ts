@@ -41,4 +41,7 @@ export class User {
 
   @OneToMany(() => UserJob, (UserJob) => UserJob.user)
   jobsApplied: UserJob[];
+
+  @Column({ default: 'IT' })
+  category: string;
 }

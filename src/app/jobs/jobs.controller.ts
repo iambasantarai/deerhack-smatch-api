@@ -25,9 +25,22 @@ export class JobsController {
     return this.jobsService.create(createJobDto, req.user.id);
   }
   @Company()
-  @Patch('/update')
-  update(@Body() createJobDto: CreateJobDto, @Req() req: any) {
+  @Patch('/update/:jid')
+  update(
+    @Body() createJobDto: CreateJobDto,
+    @Req() req: any,
+    @Param('jid') jid: string,
+  ) {
     return this.jobsService.updateJob(createJobDto, req.user.id);
+  }
+
+  @Patch('/job-status/:jid')
+  async jobStatusChange(
+    @Req() req: any,
+    @Param('jid') jid: string,
+    @Body('status') body: { status: string; userid: string },
+  ) {
+    return this.jobsService.jobStatusChange(jid, body, status);
   }
   @Public()
   @Get()
@@ -56,7 +69,7 @@ export class JobsController {
   }
 
   @Get('/job-status/:jid')
-  async jobStatus(@Req() req: any, @Query('jid') jid: string) {
+  async jobStatus(@Req() req: any, @Param('jid') jid: string) {
     return this.jobsService.jobStatus(req.user.id, jid);
   }
   @Public()
