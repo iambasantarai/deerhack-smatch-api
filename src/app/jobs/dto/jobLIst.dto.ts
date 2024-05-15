@@ -20,3 +20,12 @@ export class applyJobDto {
   @IsNotEmpty()
   jobId: string;
 }
+
+export class statusChange {
+  @ApiProperty()
+  status: string;
+  @ApiProperty()
+  userId: string;
+  @ApiProperty()
+  feedback?: string;
+}

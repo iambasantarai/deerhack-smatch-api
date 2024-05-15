@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateJobDto } from './dto/create-job.dto';
 import { Job, jobType } from './entities/job.entity';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { jobListQuery } from './dto/jobLIst.dto';
 import { generateCompanyData } from 'src/faker/faker-script';
 import { Company, Industry } from '../company/entities/company.entity';
@@ -74,6 +74,7 @@ export class JobsService {
       .leftJoinAndSelect('job.company', 'company')
       .skip(skip)
       .take(take)
+      .orderBy('job.createdAt', 'DESC')
       .select([
         'job.id',
         'job.title',
@@ -87,6 +88,7 @@ export class JobsService {
         'company.id',
         'company.name',
         'company.logo',
+        'job.createdAt',
       ])
       .getManyAndCount();
 
@@ -261,6 +263,7 @@ export class JobsService {
       .leftJoinAndSelect('users.user', 'user')
       .where('job.company = :userId', { userId })
       .andWhere('job.id = :jobId', { jobId })
+      .orderBy('users.matchingPercentage', 'DESC')
       .getOne();
   }
 
@@ -294,6 +297,15 @@ export class JobsService {
       );
     }
     userJob.status = status;
+    if (status === JobStatus.REJECTED) {
+      userJob.feedback = body.feedback;
+    }
     return this.userJobRepository.save(userJob);
+  }
+  async jobSearchQuery(search) {
+    return this.jobRepository.find({
+      where: { title: ILike(`%${search}%`) },
+      relations: ['company', 'users'],
+    });
   }
 }

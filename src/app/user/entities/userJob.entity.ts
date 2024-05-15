@@ -11,7 +11,7 @@ import { Base } from 'src/baseEntity';
 
 export enum JobStatus {
   APPLIED = 'applied',
-  INREVIEW = 'inreview',
+  INREVIEW = 'in-review',
   REJECTED = 'rejected',
   ACCEPTED = 'accepted',
 }
@@ -33,4 +33,7 @@ export class UserJob extends Base {
 
   @Column({ type: 'float', nullable: true })
   matchingPercentage: number;
+
+  @Column({ nullable: true })
+  feedback: string;
 }

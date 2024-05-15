@@ -12,7 +12,7 @@ import { JobsService } from './jobs.service';
 import { CreateJobDto } from './dto/create-job.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Company, Public } from '../auth/decorator';
-import { applyJobDto, jobListQuery } from './dto/jobLIst.dto';
+import { applyJobDto, jobListQuery, statusChange } from './dto/jobLIst.dto';
 
 @ApiTags('Jobs')
 @ApiBearerAuth()
@@ -20,6 +20,7 @@ import { applyJobDto, jobListQuery } from './dto/jobLIst.dto';
 export class JobsController {
   constructor(private readonly jobsService: JobsService) {}
 
+  @Company()
   @Post()
   create(@Body() createJobDto: CreateJobDto, @Req() req: any) {
     return this.jobsService.create(createJobDto, req.user.id);
@@ -38,9 +39,9 @@ export class JobsController {
   async jobStatusChange(
     @Req() req: any,
     @Param('jid') jid: string,
-    @Body('status') body: { status: string; userid: string },
+    @Body() body: statusChange,
   ) {
-    return this.jobsService.jobStatusChange(jid, body, status);
+    return this.jobsService.jobStatusChange(jid, body, body.status);
   }
   @Public()
   @Get()
@@ -67,7 +68,12 @@ export class JobsController {
       take: params.take,
     });
   }
-
+  @Public()
+  @Get('/job-search')
+  async jobSearch(@Req() req: any, @Query('search') search: string) {
+    console.log({ search });
+    return this.jobsService.jobSearchQuery(search);
+  }
   @Get('/job-status/:jid')
   async jobStatus(@Req() req: any, @Param('jid') jid: string) {
     return this.jobsService.jobStatus(req.user.id, jid);
